@@ -1,4 +1,3 @@
-#include <IRSendRevInt.h>
 #include <IRSendRev.h>
 
 #define BIT_LEN         0

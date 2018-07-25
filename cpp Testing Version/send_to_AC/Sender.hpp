@@ -14,10 +14,11 @@
 
 class Sender {
 public:
+
     int ir_freq;
     void dtaInit(int data1,int data2);
     void dataChange(int data1,int data2);
-    std::string sendToAC(std::string commandStr);
+    void sendToAC(std::string commandStr);
 };
 
 #endif /* send_controls_hpp */

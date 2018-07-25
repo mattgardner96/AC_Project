@@ -31,9 +31,9 @@ void Sender::dtaInit(int data1,int data2)
     dtaSend[BIT_START_L]    = 90;           // the logic low duration of "Start"
     dtaSend[BIT_DATA_H]     = 11;           // the logic "long" duration in the communication
     dtaSend[BIT_DATA_L]     = 33;           // the logic "short" duration in the communication
-    
+
     dtaSend[BIT_DATA_LEN]   = 4;            // Number of data which will sent. If the number is other, you should increase or reduce dtaSend[BIT_DATA+x].
-    
+
     dtaSend[BIT_DATA+0]     = 8;          // data that will sent
     dtaSend[BIT_DATA+1]     = 231;
     dtaSend[BIT_DATA+2]     = data1;
@@ -48,49 +48,47 @@ void Sender::dataChange(int data1,int data2) {
 };
 
 std::string Sender::sendToAC(std::string commandStr) {
-    
+
     std::string outString = "Command not recognized";
-    
+
     if (commandStr.compare("power") == 0) {         //power
         dataChange(0,255);
         outString = "Cycling A/C Power";
     }
-    
+
     if (commandStr.compare("up") == 0) {       //temp up
         dataChange(168,87);
         outString = "Turning up temp";
     }
-    
+
     if (commandStr.compare("down") == 0) {     //temp down
         dataChange(176,79);
         outString = "Turning down temp";
     }
-    
+
     if (commandStr.compare("high") == 0) {         //fan high
         dataChange(104,151);
         outString = "Fan high";
     }
-    
+
     if (commandStr.compare("low") == 0) {         //fan low
         dataChange(112,143);
         outString = "Fan low";
     }
-    
+
     if (commandStr.compare("cool") == 0) {         //cool mode
         dataChange(48,207);
         outString = "Cool mode";
     }
-    
+
     if (commandStr.compare("fan") == 0) {         //fan mode
         dataChange(16,239);
         outString = "Fan mode";
     }
-    
+
     printf("\ndata1: %d",dtaSend[BIT_DATA+2]);      //DEBUG
     printf(", data2: %d",dtaSend[BIT_DATA+3]);      //DEBUG
-    
+
     //IR.Send(dtaSend,char(ir_freq));   // would send to A/C (if A/C were connected...)
     return "\n" + outString + "\nCommand sent\n\n";
 };
-
-
