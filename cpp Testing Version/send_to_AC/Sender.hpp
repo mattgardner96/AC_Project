@@ -18,7 +18,7 @@ public:
     int ir_freq;
     void dtaInit(int data1,int data2);
     void dataChange(int data1,int data2);
-    void sendToAC(std::string commandStr);
+    std::string sendToAC(std::string commandStr);
 };
 
 #endif /* send_controls_hpp */
