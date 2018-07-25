@@ -10,8 +10,11 @@
 #include <string>
 #include <iostream>
 #include "Sender.hpp"
+#include "Sender.cpp"
 
-std::string command,output;
+using namespace std;
+
+string command,output;
 
 Sender send;
 

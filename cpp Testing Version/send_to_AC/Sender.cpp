@@ -12,6 +12,8 @@
 #include <string>
 #include <iostream>
 
+using namespace std;
+
 #define BIT_LEN         0
 #define BIT_START_H     1
 #define BIT_START_L     2
@@ -47,9 +49,9 @@ void Sender::dataChange(int data1,int data2) {
     dtaSend[BIT_DATA+3] = data2;
 };
 
-std::string Sender::sendToAC(std::string commandStr) {
+string Sender::sendToAC(string commandStr) {
 
-    std::string outString = "Command not recognized";
+    string outString = "Command not recognized";
 
     if (commandStr.compare("power") == 0) {         //power
         dataChange(0,255);
