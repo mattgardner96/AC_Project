@@ -2,14 +2,15 @@
 //  main.cpp
 //  send_to_AC
 //
+//  Testing/design file for arduino A/C system
+//
 //  Created by Matt Gardner on 7/8/18.
 //  Copyright © 2018 Matt Gardner. All rights reserved.
 //
 
-#include </Users/mattgardneradmin/Desktop/AC_Project/IRSendRev-master/IRSendRev.h>
+//#include </Users/mattgardneradmin/Desktop/AC_Project/IRSendRev-master/IRSendRev.h>
 #include <string>
 #include <iostream>
-#include "Sender.hpp"
 #include "Sender.cpp"
 
 using namespace std;

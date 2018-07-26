@@ -45,7 +45,7 @@ void sendToAC(String commandStr) {
     printOut = "Timer Activated";
     goodCmd = 1;
   }
-  
+
   if (commandStr.equals("power")) {         //power
     dataChange(0,255);
     printOut = "Cycling A/C Power";
@@ -90,7 +90,7 @@ void sendToAC(String commandStr) {
 
   //Serial.print("data1: " + dtaSend[BIT_DATA+2]);              //DEBUG
   //Serial.println(", data2: " + dtaSend[BIT_DATA+3]);          //DEBUG
-  
+
   //checks if commands are good before sending anything to A/C
   if (goodCmd) {
     IR.Send(dtaSend,char(ir_freq));
@@ -102,7 +102,7 @@ void sendToAC(String commandStr) {
     Serial.println("Command not recognized.");
     Serial.println("Please check your spelling or try another command.");
   }
-  
+
   return;
 }
 

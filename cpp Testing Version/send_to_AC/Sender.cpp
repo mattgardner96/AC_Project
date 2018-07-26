@@ -7,7 +7,6 @@
 //
 
 #include "Sender.hpp"
-
 #include "/Users/mattgardneradmin/Desktop/AC_Project/IRSendRev-master/IRSendRev.h"
 #include <string>
 #include <iostream>
