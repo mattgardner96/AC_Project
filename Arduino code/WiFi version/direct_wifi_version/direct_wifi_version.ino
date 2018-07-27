@@ -23,12 +23,12 @@ const int ir_freq = 38;                 // 38k, drives loop function;
 
 unsigned char dtaSend[20];
 
-const int CMNDNUM = 7;                // number of possible commands, for array implementation
-
 void setup() {
   // put your setup code here, to run once:
-  Serial.begin(9600);
-  Serial.setTimeout(5000);
+  Bridge.begin();
+  Console.begin();
+  //Serial.begin(9600);
+  //Serial.setTimeout(5000);
   while(!Serial);
   dtaInit(0, 0);
   Serial.println("Initialized");
@@ -41,9 +41,7 @@ void loop() {
   while (!Serial.available()) {
     //do nothing till input comes in
   }
-  Serial.println(sendToAC(Serial.readStringUntil(10)));
-  Serial.println(dtaSend[BIT_DATA+2]);
-  Serial.println(dtaSend[BIT_DATA+3]);
+  Serial.print(sendToAC(Serial.readStringUntil(10)));
 }
 
 // initials the starting values for the system
@@ -71,22 +69,58 @@ void dataChange(int data1, int data2) {
 };
 
 // send to A/C method
-// Uses array traversal to send commands to the arduino
+// works with a series of if statements that compare the argument to the
+// possible options and assign the data to be sent out. Then sends the correct
+// data
 String sendToAC(String commandStr) {
-  
-    String commands[CMNDNUM] = {"power","up","down","high","low","cool","fan"};
+    String outString = String("Command not recognized");
 
-    int cmndData[CMNDNUM*2] = {0,255,168,87,176,79,104,151,112,143,48,207,16,239};
+    bool goodCmd = false;
 
-    String outStrings[CMNDNUM] = {"Cycling A/C Power","Turning up temp","Turning down temp","Fan high","Fan low","Cool mode","Fan mode"};
-
-    for (int i = 0; i < CMNDNUM; i++) { 
-        if(commandStr == commands[i]) {
-            dataChange(cmndData[2*i],cmndData[2*i+1]);
-            IR.Send(dtaSend,char(ir_freq));   // send to A/C (if IR Emitter is connected...)
-            return "\n" + outStrings[i] + "\nCommand sent\n\n";
-        }
+    if (commandStr.compareTo("power") == 0) {        //power
+        dataChange(0,255);
+        outString = "Cycling A/C Power";
+        goodCmd = true;
     }
-    
-    return "Bad command";
+    if (commandStr.compareTo("up") == 0) {           //temp up
+        dataChange(168,87);
+        outString = "Turning up temp";
+        goodCmd = true;
+    };
+    if (commandStr.compareTo("down") == 0) {         //temp down
+        dataChange(176,79);
+        outString = "Turning down temp";
+        goodCmd = true;
+    };
+    if (commandStr.compareTo("high") == 0) {         //fan high
+        dataChange(104,151);
+        outString = "Fan high";
+        goodCmd = true;
+    };
+    if (commandStr.compareTo("low") == 0) {          //fan low
+        dataChange(112,143);
+        outString = "Fan low";
+        goodCmd = true;
+    };
+    if (commandStr.compareTo("cool") == 0) {         //cool mode
+        dataChange(48,207);
+        outString = "Cool mode";
+        goodCmd = true;
+    };
+    if (commandStr.compareTo("fan") == 0) {          //fan mode
+        dataChange(16,239);
+        outString = "Fan mode";
+        goodCmd = true;
+    };
+
+    Serial.print("\ndata1: ");                  //DEBUG
+    Serial.println(dtaSend[BIT_DATA+2]);        //DEBUG
+    Serial.print("\ndata2: ");                  //DEBUG
+    Serial.println(dtaSend[BIT_DATA+3]);        //DEBUG
+
+    if(goodCmd) {
+        IR.Send(dtaSend,char(ir_freq));   // would send to A/C (if A/C were connected...)
+        return "\n" + outString + "\nCommand sent\n\n";
+    }
+    else return outString;
 };
