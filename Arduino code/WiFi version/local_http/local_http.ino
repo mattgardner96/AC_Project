@@ -1,12 +1,28 @@
 /*
-Matt Gardner, 7/25/18
+Matt Gardner, 7/27/18
+
 A/C sender sketch(main code)
-->Type-to-send version (no web connectivity)
+->local version using URL-parsed commands
+
 Adapted from send.ino sketch, an example code for Grove IR Emitter/Receiver
 IRSendRevMaster library, created by SEEEDStudio and used under MIT License.
+
+Adapted from Arduino Bridge Library example code
+
 */
 #include <IRSendRev.h>
 #include <IRSendRevInt.h>
+#include <BridgeUdp.h>
+#include <Console.h>
+#include <Bridge.h>
+#include <BridgeServer.h>
+#include <Mailbox.h>
+#include <BridgeSSLClient.h>
+#include <HttpClient.h>
+#include <FileIO.h>
+#include <Process.h>
+#include <BridgeClient.h>
+
 
 #define BIT_LEN         0
 #define BIT_START_H     1
@@ -22,25 +38,47 @@ unsigned char dtaSend[20];
 
 const int CMNDNUM = 7;                // number of possible commands, for array implementation
 
+String commands[CMNDNUM] = {"power","up","down","high","low","cool","fan"};
+
+BridgeServer server;
+
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(9600);
-  Serial.setTimeout(5000);
-  while(!Serial);
   dtaInit(0, 0);
+  Bridge.begin();
   Serial.println("Initialized");
-  Serial.println("Reference Guide of Commands: \npower\ntemp up\ntemp down\nhigh\nlow\ncool\nfan");
+  //Serial.println("List of Commands:");
+  //for (int j = 0; j < CMNDNUM; j++) { Serial.println(commands[j]); }
+
+  server.listenOnLocalhost();
+  server.begin();
 }
 
 void loop() {
   // put your main code here, to run repeatedly:
-  Serial.print("\nEnter an A/C function: ");
+  /*Serial.print("Enter an A/C function: ");
   while (!Serial.available()) {
     //do nothing till input comes in
   }
   Serial.println(sendToAC(Serial.readStringUntil(10)));
-  Serial.println(dtaSend[BIT_DATA+2]);
-  Serial.println(dtaSend[BIT_DATA+3]);
+  */
+  BridgeClient client = server.accept();
+  if (client) {
+    read_proc(client);
+    client.stop();
+  }
+
+  delay(50);
+}
+
+void read_proc(BridgeClient client) {
+  String httpCommand = client.readStringUntil('/');
+
+  if (httpCommand == "ac") {
+    client.print(sendToAC(client.readStringUntil('\r')));
+  }
+  
 }
 
 // initials the starting values for the system
@@ -70,8 +108,6 @@ void dataChange(int data1, int data2) {
 // send to A/C method
 // Uses array traversal to send commands to the arduino
 String sendToAC(String commandStr) {
-  
-    String commands[CMNDNUM] = {"power","up","down","high","low","cool","fan"};
 
     int cmndData[CMNDNUM*2] = {0,255,168,87,176,79,104,151,112,143,48,207,16,239};
 
