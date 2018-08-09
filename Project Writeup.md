@@ -1,4 +1,4 @@
-# AC_Project
+# Overall Project Writeup
 
 This is my first real project on GitHub, so I'll continue working on the documentation as I go. This was a bit of a summer experiment to work on a need (or maybe something closer to a want) that I had, and it ended up being easier in some ways, and more difficult in others, than I had expected. This document walks through the development cycle in-depth, documenting my ideas, attempts, and solutions, as well as the equipment and tooks that I used to get everything working. The actual README file likely has more direct information about system setup and operation, but I find this file a bit more interesting.
 
