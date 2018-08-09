@@ -13,6 +13,11 @@
  * JVC and Panasonic protocol added by Kristian Lauszus (Thanks to zenwheel and other people at the original blog post)
  */
 
+ /*
+ What I'm working on: flag the ATMega32U4 for TIMER3, configured to run through PWM pin ~5. Then write the definition in the TIMER3 section
+ for my board...
+ */
+
 #ifndef _IRSENDREVINT_H_
 #define _IRSENDREVINT_H_
 
@@ -43,8 +48,8 @@
 // Teensy 2.0
 #elif defined(__AVR_ATmega32U4__)
 //#define IR_USE_TIMER1   	// tx = pin 14
-//#define IR_USE_TIMER3   	// tx = pin 9
-  #define IR_USE_TIMER4_HS  // tx = pin 10                   /* pin 13 on leonardo board   */
+#define IR_USE_TIMER3   	// tx = pin 9                    /* uncommented by MG 8/9/18, attempting to use pin 5*/
+//#define IR_USE_TIMER4_HS  // tx = pin 10                   /* pin 13 on leonardo board   */ /* commented out by MG 8/9/18 */
 
 // Teensy++ 1.0 & 2.0
 #elif defined(__AVR_AT90USB646__) || defined(__AVR_AT90USB1286__)
@@ -197,7 +202,7 @@ extern volatile irparams_t irparams;
 #elif defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__)
 #define TIMER_PWM_PIN        11                                         /* Arduino Mega                 */
 #elif defined(__AVR_ATmega644P__) || defined(__AVR_ATmega644__)
-#define TIMER_PWM_PIN        13                                         /* Sanguino                     */
+#define TIMER_PWM_PIN        13                                         /* Sanguino (usually 13), switched to pin 9 by Matt Gardner */
 #else
 #define TIMER_PWM_PIN        9                                          /* Arduino Duemilanove, Diecimi */
                                                                         /* la, LilyPad, etc             */
@@ -229,6 +234,8 @@ extern volatile irparams_t irparams;
 #define TIMER_PWM_PIN        CORE_OC3A_PIN                              /* Teensy                       */
 #elif defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__)
 #define TIMER_PWM_PIN        5                                          /* Arduino Mega                 */
+#elif defined(__AVR_ATmega32U4__)                                     /* Added this and the line below... */
+#define TIMER_PWM_PIN       5                                         /* configuring the arduino to use this pin */
 #else
 #error "Please add OC3A pin number here\n"
 #endif

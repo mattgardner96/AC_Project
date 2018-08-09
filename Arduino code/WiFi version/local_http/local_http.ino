@@ -57,12 +57,7 @@ void setup() {
 
 void loop() {
   // put your main code here, to run repeatedly:
-  /*Serial.print("Enter an A/C function: ");
-  while (!Serial.available()) {
-    //do nothing till input comes in
-  }
-  Serial.println(sendToAC(Serial.readStringUntil(10)));
-  */
+
   BridgeClient client = server.accept();
   if (client) {
     read_proc(client);
@@ -78,7 +73,7 @@ void read_proc(BridgeClient client) {
   if (httpCommand == "ac") {
     client.print(sendToAC(client.readStringUntil('\r')));
   }
-  
+
 }
 
 // initials the starting values for the system
@@ -113,13 +108,13 @@ String sendToAC(String commandStr) {
 
     String outStrings[CMNDNUM] = {"Cycling A/C Power","Turning up temp","Turning down temp","Fan high","Fan low","Cool mode","Fan mode"};
 
-    for (int i = 0; i < CMNDNUM; i++) { 
+    for (int i = 0; i < CMNDNUM; i++) {
         if(commandStr == commands[i]) {
             dataChange(cmndData[2*i],cmndData[2*i+1]);
             IR.Send(dtaSend,char(ir_freq));   // send to A/C (if IR Emitter is connected...)
             return "\n" + outStrings[i] + "\nCommand sent\n\n";
         }
     }
-    
+
     return "Bad command";
 };
