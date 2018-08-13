@@ -1,4 +1,4 @@
-# Overall Project Writeup
+# Project Writeup—The Big Picture
 
 This is my first real project on GitHub, so I'll continue working on the documentation as I go. This was a bit of a summer experiment to work on a need (or maybe something closer to a want) that I had, and it ended up being easier in some ways, and more difficult in others, than I had expected. This document walks through the development cycle in-depth, documenting my ideas, attempts, and solutions, as well as the equipment and tooks that I used to get everything working. The actual README file likely has more direct information about system setup and operation, but I find this file a bit more interesting.
 
@@ -9,14 +9,15 @@ My first idea was simple: using an off-the-shelf smart plug and connecting it us
   
 My next idea would be much more complicated: reading the existing IR remote's signals for each function, storing them, and then replicating those signals using a microcontroller within line-of-sight of the A/C. Using a network connection, I could send a signal to the microcontroller, and the microcontroller would send an IR transmission to the A/C. This approach sounded really, really complicated, but it might have just worked; in the end, this was the path I pursued.
   
-## Early Steps
+## Implementation
+### Early Steps (and Getting IR to Work)
 Using a borrowed Arduino Uno and a Grove Shield, Grove IR Emitter, and Grove IR Receiver, I read all the signals from the air conditioner within the first 24 hours of work on the project; however, understanding those IR signals (produced by some Grove example code and libraries I didn't understand) proved much more challenging. The IR signals sent by the controller were parsed by the example code as 4 8-bit numbers, and sending those same 4 numbers back to the A/C would effectively trigger the appropriate actions.
   
 Effectively abstracting the IR signal processing made life much easier, and it's definitely above my skill level at the time of writing to reverse-engineer the control scheme for a proprietary commercial IR remote by hand. Using a series of arrays filled with commands, seemingly random numbers (integers mapped to each function on the remote; again, a proprietary control scheme that I couldn't figure out a protocol for), and outputs to the Serial Monitor, I wrote an Arduino sketch allowing me to type a command into the Serial Monitor and watch the A/C respond in an instant. Within the first 10 days, I effectively had a command-line interface (CLI) for my air conditioner.
   
 One important detail that evident in this approach is the issues stemming from unidirectional communication—I have no ability to get status updates from the air conditioner. Unfortunately, that means sending a power signal from afar (when I've forgotten to turn my A/C off in the morning) means that I'll actually be shutting it off when I intend to turn it on.
   
-## Network Communication: The "Hard Part"
+### Network Communication: The "Hard Part"
 While the command line interface was cool, it wasn't actually useful; communication was handled via USB using the Arduino IDE's Serial Monitor, which wasn't especially applicable for an IoT project designed to control something from outside the room. So the hard part began: connecting my sendToAC function to the world wide web.
   
 However, an Arduino Uno isn't very useful for web communication; the board has neither the memory to handle verbose HTML/JSON/XML files nor the network interfaces to receive those files in the first place. I decided to upgrade to the newly-released Arduino YÚN REV.2, an updated version of Arduino's "flagship IoT board," designed specifically for interfacing with the web.
@@ -25,10 +26,17 @@ Packing an ethernet port, SD card slot, USB-A connector, and WiFi, this board ca
   
 After receiving the new board, I got to work on network connectivity: first, I sought to connect to the Arduino locally (within a router-based Local Area Network, or LAN) before extending my functionality to the larger WAN and Internet. Once again, the Yún's built-in Bridge library made my life considerably better; using the <Console.h> library, I could type into a CLI directly over a network connection.
 
-This seemed to work pretty well, so I set to work on what would become the final interface for the design—an http-style request that could receive commands from the web at large. At first, I thought about using RESTful HTTP commands, sending data in the header of the request and programming the Linux processor to parse that data. However, an easier option came to mind: what if the URL itself could contain all of the information I needed? For example, navigating to "http://myArduino.local/ac/power" on the local network would trigger my sendToAC function by simply passing in everything after the final '/' as an argument.
+This seemed to work pretty well, so I set to work on what would become the final interface for the design—an http-style request that could receive commands from the web at large. At first, I thought about using RESTful HTTP commands, sending data in the header of the request and programming the Linux processor to parse that data. However, an easier option came to mind: what if the URL itself could contain all of the information I needed? For example, navigating to "http://myArduino.local/arduino/ac/power" on the local network would trigger my sendToAC function by simply passing in everything after the final '/' as an argument.
 
-### A Note on Security
+#### A Note on Security
 This approach brings up some glaring security holes: unsecure connections using a simple URL means that the device is totally open to attack on the local network. When I mentioned my implementation to a friend, his first reaction was to threaten me with a DDOS attack. However, for the purpose of this project, consequences of an attack are quite small, so I decided to continue forward with my (admittedly naïve) implementation. Further refinement of the system for security would include HTTPS-based requests and better handling of unauthorized/invalid access.
 
 ### Connecting beyond the LAN
-Since I'm living in an apartment right now and don't control my own account with an ISP, I decided to use Dynamic DNS instead of mapping my network connection to a static IP.
+Since my Arduino basically acts as a server processing instructions sent via the internet, I would need to access that device directly via web browsers or services that could be anywhere in the world. Instead of using a static IP address, maintained by my ISP to provide a constantly accessible internet location, I decided to use Dynamic DNS to connect my Yún to the internet through my router. Dynamic DNS (DDNS) services re-route a chosen hostname (for example, myHostname.ddns.net) to a user's direct IP address, relying on a compatible router to relay IP address changes to the Dynamic DNS service whenever the ISP's assigned IP address changes. In effect, the DDNS service will always route this hostname to the proper IP address no matter how often that address changes.
+
+Using my router's port forwarding and DHCP reservation systems, I was able to create a constant, static link between the Arduino and the internet, allowing 24/7 control of my air conditioning unit from anywhere in the world. This server-side implementation would be easily extensible to any IR device—including entertainment systems, lighting controls, or other home automation systems—with only a reading/programming of the codes (which could even be automated/immediately accessible via a web interface).
+
+#### A Minor Complication
+After ensuring that my web communciation systems were working, it was time to test the system from start to finish. In my room, I connected my Yún to the router, sent the command to control the A/C, and received a reply from the Arduino...but the A/C didn't turn on. The code for the A/C hadn't changed, but the IR portion of my system no longer worked.
+
+To fix the problem, I went to the oscilloscope, to make sure the Arduino was sending its signals properly. After a look at [this Arduino pinout diagram] (http://orig03.deviantart.net/07cc/f/2013/290/a/e/yun_by_pighixxx-d6qvbq4.png), I realized that the Arduino was using pin D13 as defined by the library itself.
