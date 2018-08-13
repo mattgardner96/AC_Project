@@ -39,4 +39,4 @@ Using my router's port forwarding and DHCP reservation systems, I was able to cr
 #### A Minor Complication
 After ensuring that my web communciation systems were working, it was time to test the system from start to finish. In my room, I connected my Yún to the router, sent the command to control the A/C, and received a reply from the Arduino...but the A/C didn't turn on. The code for the A/C hadn't changed, but the IR portion of my system no longer worked.
 
-To fix the problem, I went to the oscilloscope, to make sure the Arduino was sending its signals properly. After a look at [this Arduino pinout diagram](http://orig03.deviantart.net/07cc/f/2013/290/a/e/yun_by_pighixxx-d6qvbq4.png), I realized that the Arduino was using pin D13 as defined by the library itself.
+To fix the problem, I went to the oscilloscope, to make sure the Arduino was sending its signals properly. After a look at [this Arduino pinout diagram](http://orig03.deviantart.net/07cc/f/2013/290/a/e/yun_by_pighixxx-d6qvbq4.png), I realized that the Arduino was using pin D13 instead of pin D3 as expected.
