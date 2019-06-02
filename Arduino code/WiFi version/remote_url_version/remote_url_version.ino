@@ -70,14 +70,24 @@ void loop() {
     client.stop();
   }
 
-  delay(50);
+  delay(100);
 }
 
 void read_proc(BridgeClient client) {
   String httpCommand = client.readStringUntil('/');
+  int value;
+  String ACCommand;
 
   if (httpCommand == "ac") {
-    client.print(sendToAC(client.readStringUntil('\r')));
+    ACCommand = client.readStringUntil('/');
+    if (ACCommand == "up" | ACCommand == "down") {
+      value = client.parseInt();
+    }
+    else {
+      value = 0;
+    }
+    
+    client.print(sendToAC(ACCommand,value));
   }
 
 }
@@ -108,23 +118,27 @@ void dataChange(int data1, int data2) {
 
 // send to A/C method
 // Uses array traversal to send commands to the arduino
-String sendToAC(String commandStr) {
+String sendToAC(String commandStr, int number) {
 
   int cmndData[CMNDNUM * 2] = {0, 255, 168, 87, 176, 79, 104, 151, 112, 143, 48, 207, 16, 239};
 
-  String outStrings[CMNDNUM] = {"Cycling A/C Power", "Turning up temp", "Turning down temp", "Fan high", "Fan low", "Cool mode", "Fan mode"};
+  String outStrings[CMNDNUM] = {F("Cycling A/C Power"), F("Turning up temp"), F("Turning down temp"), F("Fan high"), F("Fan low"), F("Cool mode"), F("Fan mode")};
 
   for (int i = 0; i < CMNDNUM; i++) {
     if (commandStr == commands[i]) {
       dataChange(cmndData[2 * i], cmndData[2 * i + 1]);
-      IR.Send(dtaSend, char(ir_freq));  // send to A/C (if IR Emitter is connected...)
+        for (int j = 0; j <= number; j++) { // send command as many times as requested
+          IR.Send(dtaSend, char(ir_freq));  // send to A/C (if IR Emitter is connected...)
+          delay(100); //delay between sending IR signals
+        }
+      }
+      
       digitalWrite(13, HIGH);
       delay(1000);
       digitalWrite(13, LOW);
       Serial.println(outStrings[i]);
-      return "\n" + outStrings[i] + "\nCommand sent\n\n";
+      return "\n" + outStrings[i] + F("\nCommand sent\n\n");
     }
-  }
 
-  return "Bad command";
+  return F("Bad command");
 };
