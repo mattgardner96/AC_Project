@@ -44,7 +44,7 @@ BridgeServer server;
 
 void setup() {
   // put your setup code here, to run once:
-  Serial.begin(9600);
+  Serial.begin(115200);
   dtaInit(0, 0);
   Bridge.begin();
   Serial.println("Initialized");
@@ -80,19 +80,23 @@ void read_proc(BridgeClient client) {
 
   if (httpCommand == "ac") {
     ACCommand = client.readStringUntil('/');
+    Serial.println("ACcommand = " + ACCommand);
     if (ACCommand == "up" | ACCommand == "down") {
+      Serial.println("got to loop");
       value = client.parseInt();
     }
     else {
+      Serial.println("skipped loop");
       value = 0;
     }
-    
-    client.print(sendToAC(ACCommand,value));
+
+      Serial.println(value);
+    client.print(sendToAC(ACCommand, value));
   }
 
-}
+};
 
-// initials the starting values for the system
+// initializes the starting values for the system
 void dtaInit(int data1, int data2) {
   dtaSend[BIT_LEN]        = 9;            // all data that needs to be sent
   dtaSend[BIT_START_H]    = 179;          // the logic high duration of "Start"
@@ -116,29 +120,36 @@ void dataChange(int data1, int data2) {
   dtaSend[BIT_DATA + 3] = data2;
 };
 
-// send to A/C method
+// send to A/C function
 // Uses array traversal to send commands to the arduino
 String sendToAC(String commandStr, int number) {
-
+  Serial.print("In the function. Command = " + commandStr);
+  Serial.println(number);
+  
   int cmndData[CMNDNUM * 2] = {0, 255, 168, 87, 176, 79, 104, 151, 112, 143, 48, 207, 16, 239};
 
-  String outStrings[CMNDNUM] = {F("Cycling A/C Power"), F("Turning up temp"), F("Turning down temp"), F("Fan high"), F("Fan low"), F("Cool mode"), F("Fan mode")};
+  String outStrings[CMNDNUM] = {"Cycling A/C Power", "Turning up temp", "Turning down temp", "Fan high", "Fan low", "Cool mode", "Fan mode"};
 
+  Serial.println("ENTERING FOR LOOP\n");
   for (int i = 0; i < CMNDNUM; i++) {
+    //Serial.println(commandStr);
+    //Serial.println(commands[i]);
+    
     if (commandStr == commands[i]) {
+      Serial.println("got here");
       dataChange(cmndData[2 * i], cmndData[2 * i + 1]);
-        for (int j = 0; j <= number; j++) { // send command as many times as requested
-          IR.Send(dtaSend, char(ir_freq));  // send to A/C (if IR Emitter is connected...)
-          delay(100); //delay between sending IR signals
-        }
+      for (int j = 0; j <= number; j++) {
+        IR.Send(dtaSend, char(ir_freq));  // send to A/C (if IR Emitter is connected...)
+        delay(300);
       }
-      
       digitalWrite(13, HIGH);
       delay(1000);
       digitalWrite(13, LOW);
       Serial.println(outStrings[i]);
-      return "\n" + outStrings[i] + F("\nCommand sent\n\n");
+      return "\n" + outStrings[i] + "\nCommand sent\n\n";
     }
-
-  return F("Bad command");
+  }
+  Serial.println("Exiting fn");
+  return "Bad command";
 };
+
