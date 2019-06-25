@@ -31,21 +31,29 @@
 #define BIT_DATA_L      4
 #define BIT_DATA_LEN    5
 #define BIT_DATA        6
+#define UPDATE_INTERVAL 100              // 300 for testing purposes = 30s interval
+#define CMNDNUM         7               // number of possible commands, for array implementation
 
 const int ir_freq = 38;                 // 38k, drives loop function;
 
-unsigned char dtaSend[20];
-
-const int CMNDNUM = 7;                // number of possible commands, for array implementation
+unsigned char dtaSend[20];                
 
 String commands[CMNDNUM] = {"power", "up", "down", "high", "low", "cool", "fan"};
 
+char serverName[] = "checkip.dyndns.com"; // get IP webpage server
+
+int DDNS_update;
+
+String IPaddress;
+
 BridgeServer server;
+HttpClient dns_updater;
 
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(115200);
   dtaInit(0, 0);
+  DDNS_update = 0; // initialize DDNS counter
   Bridge.begin();
   Serial.println("Initialized");
   pinMode(13, OUTPUT);
@@ -71,6 +79,13 @@ void loop() {
   }
 
   delay(100);
+  
+  DDNS_update++; // increment every time program runs (every 100ms)
+  
+  if (DDNS_update == UPDATE_INTERVAL) {
+    DDNS_update = 0; // reset back to 0 if counter fills
+    dns_updater.get("http://bWF0dGdhcmRuZXI5NkBnbWFpbC5jb206Um4hN095XmgxNjMj@dynupdate.no-ip.com/nic/update?hostname=mattgardnerac.ddns.net&myip=" + getIP());
+  }
 }
 
 void read_proc(BridgeClient client) {
@@ -80,21 +95,51 @@ void read_proc(BridgeClient client) {
 
   if (httpCommand == "ac") {
     ACCommand = client.readStringUntil('/');
-    Serial.println("ACcommand = " + ACCommand);
+    //Serial.println("ACcommand = " + ACCommand); //DEBUG
     if (ACCommand == "up" | ACCommand == "down") {
-      Serial.println("got to loop");
+      //Serial.println("got to loop"); //DEBUG
       value = client.parseInt();
     }
     else {
-      Serial.println("skipped loop");
+      //Serial.println("skipped loop"); //debug
       value = 0;
     }
 
-      Serial.println(value);
+      // Serial.println(value); //DEBUG
     client.print(sendToAC(ACCommand, value));
   }
 
 };
+
+// Gets the IP address from a server
+String getIP () { /* client function to send/receive GET request data. from Arduino Forum https://forum.arduino.cc/index.php?topic=225139.0 */
+
+  BridgeClient dns_client;
+  IPaddress = "";
+  
+  if (dns_client.connect(serverName, 80)) {  //starts client connection, checks for connection
+    Serial.println("connected");
+    dns_client.println("GET / HTTP/1.0"); //download text
+    dns_client.println("Host: checkip.dyndns.com");
+    dns_client.println(); //end of get request
+  } 
+  else {
+    Serial.println("connection failed"); //error message if no client connect
+    Serial.println();
+  }
+
+  while(dns_client.connected() && !dns_client.available()) delay(1); //waits for data
+  while (dns_client.connected() || dns_client.available()) { //connected or data available
+    String c = dns_client.readString(); //gets byte from wifi buffer
+    Serial.println("C: " + c);
+    //Serial.println(c); //DEBUG
+    IPaddress.concat(c);
+  }
+    
+    dns_client.stop();
+    IPaddress = IPaddress.substring(20);
+    return IPaddress;
+  }
 
 // initializes the starting values for the system
 void dtaInit(int data1, int data2) {
