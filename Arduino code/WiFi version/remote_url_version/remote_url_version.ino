@@ -84,7 +84,7 @@ void loop() {
 
 }
 
-void updateDNS() {
+void updateDNS() { 
   Serial.println("updating IP");
   Process p;            
   p.runShellCommand("curl -H \"Host: dynupdate.no-ip.com\" -H \"Authorization: Basic bWF0dGdhcmRuZXI5NkBnbWFpbC5jb206YXJkdWlubzEy\" -H \"User-Agent: MattsMacbook macOS/10.14 mattgardner96@gmail.com\" http://dynupdate.no-ip.com/nic/update?hostname=mattgardnerac.ddns.net");
