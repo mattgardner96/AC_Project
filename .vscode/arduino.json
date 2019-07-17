@@ -1,3 +1,4 @@
 {
-    "board": "arduino:avr:yun"
+    "board": "arduino:avr:yun",
+    "sketch": "Arduino code/WiFi version/remote_url_version/remote_url_version.ino"
 }
